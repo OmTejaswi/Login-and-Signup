@@ -29,6 +29,8 @@ function setup() {
 }
 
 function draw() {
+    background(255);
+
     Name = i1.value();
     Password = i2.value();
 
@@ -62,8 +64,12 @@ function draw() {
             errorMsg=error.message;
 
             console.log(errorCode);
-            console.log(errorMsg)
+            console.log(errorMsg);
+
+           
         
            });
     })
+    textAlign(CENTER);
+    text(errorMsg,560,400)
 }
