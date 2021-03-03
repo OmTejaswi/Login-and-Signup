@@ -24,7 +24,7 @@ function setup() {
     fill("black");
     textSize(15);
     textAlign(CENTER);
-    text("Name: ",440,205);
+    text("Email: ",440,205);
     text("Password:",440,240);
 }
 
