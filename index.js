@@ -8,10 +8,12 @@ var Name, Password;
 
 var auth;
 
-var email, emailVerified;
+var email, email_Verified;
 
 var db;
 var id;
+
+var i = 0
 
 var errorCode, errorMsg;
 
@@ -28,9 +30,9 @@ function setup() {
 
     auth = firebase.auth();
 
-    registerBtn.mousePressed(function(){
+    user = null;
 
-        user = firebase.auth().currentUser;
+    registerBtn.mousePressed(function(){
             
         Name = i1.value();
         Password = i2.value();
@@ -38,13 +40,16 @@ function setup() {
         firebase.auth().createUserWithEmailAndPassword(Name,Password).then(function(){
         alert("sucess!");
         id=firebase.auth().currentUser.uid;
-        db.ref("users/"+id).set({
-            ID: id
-        })
+        user = firebase.auth().currentUser;
 
         firebase.auth().onAuthStateChanged(function(user) {
             user.sendEmailVerification(); 
           });
+
+          db.ref("users/"+id+"/email").on("value",function(data){
+              var val = data.val()
+              console.log(val);
+          })
 
        
         //user.sendEmailVerification().then(function(){
@@ -53,13 +58,15 @@ function setup() {
             db.ref("users/"+id).set({
                 ID: id,
                 email: i1.value(),
+                password: Password
             //})
 
             
             
          })
 
-        
+         i=1;
+         email_Verified = user.emailVerified;
         
     }).catch(function(error){
 
@@ -78,23 +85,18 @@ function setup() {
 })
 loginBtn.mousePressed(function(){
 
-    user = firebase.auth().currentUser;
-
     Name = i1.value();
     Password = i2.value();
 
     firebase.auth().signInWithEmailAndPassword(Name,Password).then(function(){
         alert("sucess!")
-        id=firebase.auth().currentUser.uid;
-        db.ref("users/"+id).set({
-            ID: id
-        })
+    
+        user = firebase.auth().currentUser;
+        i = 1;
 
-        db.ref("users/"+id+"/email").on("value", function(data){
-            var em = data.val();
-            console.log(em)
-        })
-
+        email_Verified = user.emailVerified;
+        
+        
     }).catch(function(error){
 
         errorCode=error.code;
@@ -103,41 +105,50 @@ loginBtn.mousePressed(function(){
         console.log(errorCode);
         console.log(errorMsg);
 
-        textAlign(CENTER);
-        fill("black")
-        textSize(20)
-        text(errorMsg,500,400)
+       
     
        });
 })
 
+    
+}
+
+function draw() {
+   background(255);
+   
+
+    //email = user.email;
+    
+    if(i === 1 && email_Verified === false) {
+        firebase.auth().signInWithEmailAndPassword(Name,Password)
+        user = firebase.auth().currentUser;
+        email_Verified = user.emailVerified
+    }
+    
+
+    if(user !== null && user !== undefined) {
+        user = firebase.auth().currentUser;
+        email_Verified = user.emailVerified;
+            firebase.auth().onAuthStateChanged(function(user) { 
+                if (email_Verified) {
+                registerBtn.hide();
+                console.log('Email is verified');
+                } else {
+                registerBtn.show();
+                console.log(`Email is not verified`)
+                }
+            });
+    }
+     
     fill("black");
     textSize(15);
     textAlign(CENTER);
     text("Email: ",440,205);
     text("Password:",440,240);
-}
 
-function draw() {
-   // background(255);
-
-     
-
-    email = user.email;
-    emailVerified = user.emailVerified;
-    
-    
-
-    firebase.auth().onAuthStateChanged(function(user) { 
-        if (emailVerified) {
-          registerBtn.hide();
-          console.log('Email is verified');
-        }
-        else {
-         registerBtn.show();
-        }
-      });
-
-     
+    textAlign(CENTER);
+    fill("black")
+    textSize(20)
+    text(errorMsg,500,400)
       
 }
